@@ -750,44 +750,52 @@ function submitFeedback() {
     const type = document.getElementById('feedbackType').value;
     const content = document.getElementById('feedbackContent').value.trim();
 
-    // 驗證（保持原樣）
     if (!id || id.length !== 6 || !/^[A-Z]{2}\d{4}$/.test(id)) {
         alert("員編格式錯誤！請輸入 2 個大寫英文字母 + 4 位數字，例如 AB1234");
         return;
     }
-    if (!type) {
-        alert("請選擇意見項目！");
-        return;
-    }
-    if (!content) {
-        alert("請輸入回饋內容！");
-        return;
-    }
+    if (!type) { alert("請選擇意見項目！"); return; }
+    if (!content) { alert("請輸入回饋內容！"); return; }
 
-    // Google Forms 送出目標
-    const formAction = "https://docs.google.com/forms/d/e/1FAIpQLSdfSjVGxBCS0x2v8f3FzGXKiJTMygDpKhV2ZqAu1wXYYSjvvw/formResponse";
+    // 建立隱藏 iframe（手機最穩定的送法）
+    const iframe = document.createElement('iframe');
+    iframe.name = 'hiddenIframe';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
 
-    // 欄位對應（已確認對應你的表單）
-    const formData = new FormData();
-    formData.append("entry.535338149", id);          // 員編
-    formData.append("entry.279485988", type);        // 意見項目
-    formData.append("entry.1394457056", content);    // 意見內容
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'https://docs.google.com/forms/d/e/1FAIpQLSdfSjVGxBCS0x2v8f3FzGXKiJTMygDpKhV2ZqAu1wXYYSjvvw/formResponse';
+    form.target = 'hiddenIframe';  // 送給 iframe，不跳頁
 
-    fetch(formAction, {
-        method: "POST",
-        mode: "no-cors",  // Google Forms 必須用 no-cors
-        body: formData
-    }).then(() => {
+    // 隱藏輸入欄位
+    const addField = (name, value) => {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = name;
+        input.value = value;
+        form.appendChild(input);
+    };
+
+    addField('entry.535338149', id);         // 員編
+    addField('entry.279485988', type);       // 意見項目
+    addField('entry.1394457056', content);   // 意見內容
+
+    document.body.appendChild(form);
+    form.submit();
+
+    // 送出後清空 + 提示
+    setTimeout(() => {
         alert("感謝你的回饋！已成功送出～\n小賴會認真看的喔 :D");
-        // 清空表單
         document.getElementById('empId').value = '';
         document.getElementById('feedbackType').value = '';
         document.getElementById('feedbackContent').value = '';
         document.getElementById('feedbackContent').placeholder = "請先選擇意見項目";
-    }).catch(err => {
-        alert("送出時出了點問題，請再試一次～");
-        console.error("送出錯誤:", err);
-    });
+        
+        // 移除 iframe 和 form
+        document.body.removeChild(iframe);
+        document.body.removeChild(form);
+    }, 1000);  // 延遲 1 秒確保送出完成
 }
 
 // 初始化
