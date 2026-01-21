@@ -125,14 +125,14 @@
         /* 浮水印 CSS */
         .watermark {
             position: fixed;
-            right: 10px;
-            bottom: 10px;
-            font-size: 10px;
+            right: 8px;
+            bottom: 8px;
+            font-size: 8px;
             color: rgba(150, 150, 150, 0.5);
             text-align: right;
             pointer-events: none;
             padding: 5px;
-            max-width: 300px;
+            max-width: 500px;
             line-height: 1.2;
         }
         [data-theme="dark"] .watermark {
@@ -181,7 +181,7 @@
 <div class="watermark">
     Nike 尺寸轉換工具.Made by Lai_0827.(NiXkMoXXXtum_XN2):D<br>
     我是靠 AI 寫的我沒有這麼厲害我是表藝系的不是資工系<br>
-    需要添加功能 \ 尺寸 \ 單位 \ 類型可找小賴 但有任何責任請找劉漢頓
+    需添加功能 \ 尺寸 \ 單位 \ 類型可找小賴 但有任何責任請找劉漢頓
 </div>
 
 <script>
@@ -245,7 +245,7 @@ function selectValue(val) {
         html += `<div class="res-tile"><span style="font-size:12px;opacity:0.6">EUR</span><br><span class="res-val">${target.EUR}</span></div>`;
         html += `<div class="res-tile"><span style="font-size:12px;opacity:0.6">CM</span><br><span class="res-val">${target.CM}</span></div>`;
         document.getElementById('result-content').innerHTML = html + `</div>`;
-        navigateTo(4, "水喔!一次過.轉成功了", "所以答案就是");
+        navigateTo(4, "水喔!一次過 轉成功了", "所以答案就是");
     }
 }
 function navigateTo(step, title, sub) {
