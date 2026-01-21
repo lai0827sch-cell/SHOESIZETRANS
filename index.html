@@ -1,10 +1,16 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-	<link rel="icon" href="favicon.PNG" type="image/x-icon">
+    <link rel="icon" href="favicon.png" type="image/x-icon">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Shoes Size Transform V.1</title>
+
+    <!-- PWA 相關 meta，讓加到主畫面更像 App -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="theme-color" content="#fbfbfd">
+
     <style>
         :root {
             --glass: rgba(255, 255, 255, 0.7);
@@ -12,21 +18,18 @@
             --ios-blue: #007AFF;
             --text-main: #1c1c1e;
             --bg-color: #fbfbfd;
-            --item-active: rgba(0,0,0,0.05);
+            --item-active: rgba(0,0,0,0.12); /* 加強 active 背景變淺 */
             --glass-stroke: rgba(255,255,255,0.4);
         }
-
         /* 深色模式變數 */
         [data-theme="dark"] {
             --glass: rgba(28, 28, 30, 0.7);
             --text-main: #ffffff;
             --bg-color: #000000;
-            --item-active: rgba(255,255,255,0.1);
+            --item-active: rgba(255,255,255,0.18); /* 深色模式 active 也變淺 */
             --glass-stroke: rgba(255,255,255,0.1);
         }
-
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
         body {
             font-family: -apple-system, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
             margin: 0;
@@ -38,7 +41,6 @@
             color: var(--text-main);
             transition: background 0.5s ease;
         }
-
         /* 2026 流體背景 */
         .liquid-bg {
             position: fixed;
@@ -50,14 +52,11 @@
             animation: flow 15s infinite alternate ease-in-out;
             transition: opacity 0.5s;
         }
-
         [data-theme="dark"] .liquid-bg {
             background: radial-gradient(circle at 30% 30%, #2c0b4a 0%, #000 50%),
                         radial-gradient(circle at 70% 70%, #0a2342 0%, #000 50%);
         }
-
         @keyframes flow { from { transform: rotate(0deg); } to { transform: rotate(15deg) scale(1.1); } }
-
         /* 模式切換按鈕 */
         .theme-toggle {
             position: absolute;
@@ -75,30 +74,23 @@
             display: flex; align-items: center; justify-content: center;
             border: 1px solid var(--glass-stroke);
         }
-
         #nav-container {
             width: 100%; max-width: 430px; height: 100%;
             position: relative; display: flex; flex-direction: column;
             padding-top: env(safe-area-inset-top);
         }
-
         header { padding: 30px 24px 10px; transition: all 0.4s; }
         header h1 { font-size: 34px; font-weight: 700; margin: 0; letter-spacing: -1px; }
         header p { color: #8e8e93; font-size: 17px; margin: 5px 0 0; }
-
         .view-stack { flex: 1; position: relative; overflow: hidden; }
-
         .step-view {
             position: absolute; inset: 0; padding: 10px 20px; overflow-y: auto;
             display: none; flex-direction: column;
             transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.4s;
         }
-
         .step-view.active { display: flex; animation: slideIn 0.5s cubic-bezier(0.32, 0.72, 0, 1); }
         .step-view.exit { transform: translateX(-20%); opacity: 0; }
-
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-
         .glass-card {
             background: var(--glass);
             backdrop-filter: blur(25px) saturate(180%);
@@ -108,23 +100,28 @@
             margin-bottom: 25px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.05);
         }
-
         .ios-item {
-            padding: 18px 20px; display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 0.5px solid rgba(150,150,150,0.1); cursor: pointer; transition: 0.2s;
+            padding: 18px 20px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            border-bottom: 0.5px solid rgba(150,150,150,0.1); 
+            cursor: pointer; 
+            transition: all 0.15s ease;
         }
-
         .ios-item:last-child { border-bottom: none; }
-        .ios-item:active { background: var(--item-active); transform: scale(0.98); }
+        .ios-item:active {
+            background: var(--item-active);          /* 點擊時背景變淺 */
+            transform: scale(0.98) translateY(1px);  /* 縮小 + 輕微下沉 */
+            opacity: 0.92;                           /* 整體稍淡，加強視覺回饋 */
+        }
         .ios-item span { font-size: 19px; font-weight: 500; }
-
         .res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .res-tile { background: rgba(150,150,150,0.1); padding: 15px; border-radius: 15px; }
         .res-val { font-size: 22px; font-weight: 700; color: var(--liquid-purple); }
-
         .back-btn { color: var(--ios-blue); font-size: 17px; margin-bottom: 10px; cursor: pointer; }
         .reset-btn { margin-top: 30px; background: var(--text-main); color: var(--bg-color); padding: 16px; border-radius: 15px; text-align: center; font-weight: 600; }
-        
+       
         /* 浮水印 CSS */
         .watermark {
             position: fixed;
@@ -138,24 +135,20 @@
             max-width: 300px;
             line-height: 1.2;
         }
-
         [data-theme="dark"] .watermark {
              color: rgba(255, 255, 255, 0.4);
         }
     </style>
 </head>
 <body data-theme="light">
-
 <div class="liquid-bg"></div>
 <!-- 已添加提示文字 title 屬性 -->
 <div class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="切換深色模式">🌙</div>
-
 <div id="nav-container">
     <header>
         <h1 id="title-text">陽春自製轉換器By,Lai</h1>
         <p id="sub-text">客人提供的鞋款類型</p>
     </header>
-
     <div class="view-stack">
         <!-- Step 1 -->
         <div id="view1" class="step-view active">
@@ -167,12 +160,12 @@
         </div>
         <!-- Step 2 -->
         <div id="view2" class="step-view">
-            <div class="back-btn" onclick="goBack(1)">   想回到過去~(其實就是上一頁)</div>
+            <div class="back-btn" onclick="goBack(1)"> 想回到過去~(其實就是上一頁)</div>
             <div class="glass-card" id="unit-list"></div>
         </div>
         <!-- Step 3 -->
         <div id="view3" class="step-view">
-            <div class="back-btn" onclick="goBack(2)">   想回到過去~(其實就是上一頁)</div>
+            <div class="back-btn" onclick="goBack(2)"> 想回到過去~(其實就是上一頁)</div>
             <div class="glass-card" id="value-list"></div>
         </div>
         <!-- Step 4 -->
@@ -184,12 +177,11 @@
         </div>
     </div>
 </div>
-
 <!-- 浮水印 HTML -->
 <div class="watermark">
-    Nike 尺寸轉換工具.Made by Lai_0827.(NiXkMoXXXtum_XN2)<br>
+    Nike 尺寸轉換工具.Made by Lai_0827.(NiXkMoXXXtum_XN2):D<br>
     我是靠 AI 寫的我沒有這麼厲害我是表藝系的不是資工系<br>
-    需添加功能 \ 尺寸 \ 單位 \ 類型可找小賴 但有任何責任請找劉漢頓
+    需要添加功能 \ 尺寸 \ 單位 \ 類型可找小賴 但有任何責任請找劉漢頓
 </div>
 
 <script>
@@ -200,15 +192,16 @@ const sizeData = {
     "兒童款": [{US:"1C", EUR:16, CM:7}, {US:"2C", EUR:17, CM:8}, {US:"3C", EUR:18.5, CM:9}, {US:"4C", EUR:19.5, CM:10}, {US:"5C", EUR:21, CM:11}, {US:"6C", EUR:22, CM:12}, {US:"7C", EUR:23.5, CM:13}, {US:"8C", EUR:25, CM:14}, {US:"9C", EUR:26, CM:15}, {US:"10C", EUR:27, CM:16}, {US:"11C", EUR:28, CM:17}, {US:"12C", EUR:29.5, CM:18}, {US:"13C", EUR:31, CM:19}, {US:"1Y", EUR:32, CM:20}, {US:"1.5Y", EUR:33, CM:20.5}, {US:"2Y", EUR:33.5, CM:21}, {US:"2.5Y", EUR:34, CM:21.5}, {US:"3Y", EUR:35, CM:22}, {US:"3.5Y", EUR:35.5, CM:22.5}, {US:"4Y", EUR:36, CM:23}, {US:"4.5Y", EUR:36.5, CM:23.5}, {US:"5Y", EUR:37, CM:23.5}, {US:"5.5Y", EUR:37.5, CM:24}, {US:"6Y", EUR:38.5, CM:24}, {US:"6.5Y", EUR:39, CM:24.5}, {US:"7Y", EUR:40, CM:25}]
 };
 
+let currentSelection = { type: '', unit: '', value: '' };
+
 // --- 主題邏輯 ---
 function initTheme() {
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.body.setAttribute('data-theme', savedTheme);
     const themeBtn = document.getElementById('themeBtn');
     themeBtn.innerText = savedTheme === 'dark' ? '☀️' : '🌙';
-    themeBtn.title = savedTheme === 'dark' ? '切換淺色模式' : '切換深色模式'; /* 動態更新提示 */
+    themeBtn.title = savedTheme === 'dark' ? '切換淺色模式' : '切換深色模式';
 }
-
 function toggleTheme() {
     const current = document.body.getAttribute('data-theme');
     const next = current === 'light' ? 'dark' : 'light';
@@ -216,28 +209,34 @@ function toggleTheme() {
     localStorage.setItem('theme', next);
     const themeBtn = document.getElementById('themeBtn');
     themeBtn.innerText = next === 'dark' ? '☀️' : '🌙';
-    themeBtn.title = next === 'dark' ? '切換淺色模式' : '切換深色模式'; /* 動態更新提示 */
+    themeBtn.title = next === 'dark' ? '切換淺色模式' : '切換深色模式';
+}
+
+// --- 觸覺回饋 ---
+function hapticFeedback() {
+    if (navigator.vibrate) {
+        navigator.vibrate(50);  // 短震 50ms，Android 有效，iOS 無效但不 error
+    }
 }
 
 // --- 導航邏輯 ---
-let currentSelection = { type: '', unit: '', value: '' };
-
 function selectType(type) {
+    hapticFeedback();
     currentSelection.type = type;
     const units = type === "兒童款" ? ["US", "沒人會用UK吧…", "EUR", "CM"] : ["US", "UK", "EUR", "CM"];
     document.getElementById('unit-list').innerHTML = units.map(u => `<div class="ios-item" onclick="selectUnit('${u}')"><span>${u}</span></div>`).join('');
     navigateTo(2, "那客人是用甚麼單位呢", "下面選一個好嗎~");
 }
-
 function selectUnit(unit) {
+    hapticFeedback();
     if (unit.includes("沒人會用")) return alert("😱 沃草！真的有人用UK？");
     currentSelection.unit = unit;
     const values = [...new Set(sizeData[currentSelection.type].map(item => item[unit]))];
     document.getElementById('value-list').innerHTML = values.map(v => `<div class="ios-item" onclick="selectValue('${v}')"><span>${v}</span></div>`).join('');
     navigateTo(3, `原來如此 是 ${unit}啊`, "請給我客人的尺碼Please~");
 }
-
 function selectValue(val) {
+    hapticFeedback();
     const target = sizeData[currentSelection.type].find(item => String(item[currentSelection.unit]) === String(val));
     if (target) {
         let html = `<h2 style="margin-top:0; color:var(--liquid-purple)">✅ ${currentSelection.type}</h2><div class="res-grid">`;
@@ -249,7 +248,6 @@ function selectValue(val) {
         navigateTo(4, "水喔!一次過.轉成功了", "所以答案就是");
     }
 }
-
 function navigateTo(step, title, sub) {
     const currentView = document.querySelector('.step-view.active');
     if (currentView) currentView.classList.replace('active', 'exit');
@@ -260,7 +258,6 @@ function navigateTo(step, title, sub) {
         document.getElementById('sub-text').innerText = sub;
     }, 100);
 }
-
 function goBack(step) {
     const titles = ["", "陽春自製轉換器By,Lai", "客人是用甚麼單位呢~", "客人的尺碼呢~"];
     navigateTo(step, titles[step], "那你再選一次");
@@ -268,7 +265,40 @@ function goBack(step) {
 
 // 初始化
 initTheme();
+
+// 離線存取 - 單檔 service worker（整個程式碼的最後）
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        const swCode = `
+            const CACHE_NAME = 'shoe-transform-v1';
+            const urlsToCache = [
+                './',
+                './index.html'  // 如果你的檔案不是 index.html，請改成正確檔名
+            ];
+
+            self.addEventListener('install', event => {
+                event.waitUntil(
+                    caches.open(CACHE_NAME)
+                        .then(cache => cache.addAll(urlsToCache))
+                );
+            });
+
+            self.addEventListener('fetch', event => {
+                event.respondWith(
+                    caches.match(event.request)
+                        .then(response => response || fetch(event.request))
+                );
+            });
+        `;
+
+        const blob = new Blob([swCode], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+
+        navigator.serviceWorker.register(swUrl, { scope: './' })
+            .then(() => console.log('離線 OK'))
+            .catch(err => console.log('SW 錯誤', err));
+    });
+}
 </script>
 </body>
 </html>
-
