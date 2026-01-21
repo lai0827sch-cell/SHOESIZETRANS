@@ -5,29 +5,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Shoes Size Transform V.1</title>
-
-    <!-- PWA 相關 meta，讓加到主畫面更像 App -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="theme-color" content="#fbfbfd">
-
     <style>
         :root {
             --glass: rgba(255, 255, 255, 0.7);
-            --liquid-purple: #9370db; /* 已更新為 #9370db */
+            --liquid-purple: #9370db;
             --ios-blue: #007AFF;
             --text-main: #1c1c1e;
             --bg-color: #fbfbfd;
-            --item-active: rgba(0,0,0,0.12); /* 加強 active 背景變淺 */
+            --item-active: rgba(0,0,0,0.12);
             --glass-stroke: rgba(255,255,255,0.4);
+            --tab-active-bg: rgba(0, 122, 255, 0.35);
+            --tab-active-duration: 0.4s;
         }
-        /* 深色模式變數 */
         [data-theme="dark"] {
             --glass: rgba(28, 28, 30, 0.7);
             --text-main: #ffffff;
             --bg-color: #000000;
-            --item-active: rgba(255,255,255,0.18); /* 深色模式 active 也變淺 */
+            --item-active: rgba(255,255,255,0.18);
             --glass-stroke: rgba(255,255,255,0.1);
+            --tab-active-bg: rgba(0, 122, 255, 0.5);
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
@@ -37,11 +36,10 @@
             height: 100vh;
             overflow: hidden;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             color: var(--text-main);
             transition: background 0.5s ease;
         }
-        /* 2026 流體背景 */
         .liquid-bg {
             position: fixed;
             top: -50%; left: -50%; width: 200%; height: 200%;
@@ -50,186 +48,626 @@
             z-index: -1;
             filter: blur(80px);
             animation: flow 15s infinite alternate ease-in-out;
-            transition: opacity 0.5s;
         }
         [data-theme="dark"] .liquid-bg {
             background: radial-gradient(circle at 30% 30%, #2c0b4a 0%, #000 50%),
                         radial-gradient(circle at 70% 70%, #0a2342 0%, #000 50%);
         }
         @keyframes flow { from { transform: rotate(0deg); } to { transform: rotate(15deg) scale(1.1); } }
-        /* 模式切換按鈕 */
-        .theme-toggle {
-            position: absolute;
+
+        .tab-bar {
+            position: sticky;
             top: env(safe-area-inset-top);
-            right: 20px;
-            padding: 10px;
-            z-index: 100;
-            font-size: 22px;
-            cursor: pointer;
+            z-index: 200;
             background: var(--glass);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius: 50%;
-            width: 44px; height: 44px;
-            display: flex; align-items: center; justify-content: center;
-            border: 1px solid var(--glass-stroke);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-stroke);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;   /* 改成 space-between，讓左右兩端固定 */
+            padding: 0 16px;
+            height: 48px;
+            flex-shrink: 0;
+            gap: 12px;                        /* 新增一點間距，避免擠壓 */
         }
-        #nav-container {
-            width: 100%; max-width: 430px; height: 100%;
-            position: relative; display: flex; flex-direction: column;
-            padding-top: env(safe-area-inset-top);
+        .tab-list {
+            flex: 1;
+            display: flex;
+            overflow-x: auto;
+            gap: 16px;
+            padding-right: 160px;           /* 右邊留空間給固定區域，避免蓋住 */
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            scroll-snap-type: x proximity;  /* 滑動有輕微吸附感 */
         }
-        header { padding: 30px 24px 10px; transition: all 0.4s; }
+
+        .tab-list::-webkit-scrollbar {
+            display: none;
+        }
+        .tab-item {
+    padding: 8px 14px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text-main);
+    white-space: nowrap;
+    border-radius: 12px;
+    background: rgba(150,150,150,0.08);
+    border: 1px solid rgba(150,150,150,0.15);
+    transition: all var(--tab-active-duration) ease, transform 0.15s ease; /* 新增 transform 動畫 */
+    cursor: pointer;
+}
+
+.tab-item:hover {
+    background: rgba(150,150,150,0.15);
+}
+
+.tab-item.active {
+    background: var(--tab-active-bg);
+    color: var(--ios-blue);
+    border-color: var(--ios-blue);
+    box-shadow: 0 2px 8px rgba(0,122,255,0.2);
+}
+
+/* 只讓鞋碼轉換與意見回饋有縮放效果 */
+.tab-item[data-tab="shoe"]:active,
+.tab-item[data-tab="shoe"].clicked,
+.tab-item[data-tab="feedback"]:active,
+.tab-item[data-tab="feedback"].clicked {
+    transform: scale(0.80);
+    transition: transform 0.1s ease;
+}
+
+/* 放開後回彈（自然一點） */
+.tab-item[data-tab="shoe"],
+.tab-item[data-tab="feedback"] {
+    transition: transform 0.2s ease-out;
+}
+
+        .tab-item:hover {
+        background: rgba(150,150,150,0.15);
+        }
+
+        .tab-item.active {
+        background: var(--tab-active-bg);
+        color: var(--ios-blue);
+        border-color: var(--ios-blue);
+        box-shadow: 0 2px 8px rgba(0,122,255,0.2);
+    }
+
+    /* 右邊固定區域（意見回饋 + 開關） */
+        .fixed-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;                      /* 意見回饋與開關之間距離，可調 8px~16px */
+            flex-shrink: 0;
+            padding-left: 12px;
+            background: inherit;            /* 繼承玻璃背景 */
+        }
+
+        /* 固定按鈕樣式（看起來像 active，但永遠固定） */
+.tab-item.fixed {
+        background: transparent !important;   /* 移除藍色底色 */
+            border: none !important;              /* 不要邊框 */
+            box-shadow: none !important;
+            min-width: 48px;                      /* 最小寬度 48px，確保點擊範圍夠大 */
+            height: 44px;                         /* 與 tab-bar 等高 */
+            display: flex;
+            align-items: center;
+           justify-content: center;
+           font-size: 24px;                      /* 💬 符號大小適中，不會太小 */
+            padding: 0 12px;                      /* 左右各留 12px 空間，點擊更舒服 */
+            color: var(--text-main);              /* 跟其他 tab 顏色一致 */
+            transition: all var(--tab-active-duration) ease, transform 0.15s ease;
+        }
+
+        /* 點擊時的壓縮感（讓它感覺被按下去） */
+        .tab-item.fixed:active,
+        .tab-item.fixed.clicked {
+            transform: scale(0.70);               /* 縮小到 92%，像被壓了一下 */
+        }
+
+        .clicked {
+            background: var(--tab-active-bg) !important;
+            transition: background var(--tab-active-duration) ease;
+        }
+        /* 晃動動畫 */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+            100% { transform: translateX(0); }
+        }
+
+        .shake {
+            animation: shake 0.4s ease-in-out forwards;
+        }
+
+        #nav-container { flex: 1; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        header { padding: 20px 24px 8px; transition: all 0.4s; }
         header h1 { font-size: 34px; font-weight: 700; margin: 0; letter-spacing: -1px; }
         header p { color: #8e8e93; font-size: 17px; margin: 5px 0 0; }
-        .view-stack { flex: 1; position: relative; overflow: hidden; }
+        .view-stack { flex: 1; position: relative; overflow: hidden; padding: 0 20px; }
         .step-view {
-            position: absolute; inset: 0; padding: 10px 20px; overflow-y: auto;
+            position: absolute; inset: 0; overflow-y: auto;
             display: none; flex-direction: column;
             transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.4s;
         }
         .step-view.active { display: flex; animation: slideIn 0.5s cubic-bezier(0.32, 0.72, 0, 1); }
         .step-view.exit { transform: translateX(-20%); opacity: 0; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
         .glass-card {
             background: var(--glass);
             backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
             border-radius: 20px;
             border: 1px solid var(--glass-stroke);
             margin-bottom: 25px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.05);
         }
-        .ios-item {
-            padding: 18px 20px; 
-            display: flex; 
-            align-items: center; 
+        .ios-item, .back-btn, .reset-btn {
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
             justify-content: space-between;
-            border-bottom: 0.5px solid rgba(150,150,150,0.1); 
-            cursor: pointer; 
-            transition: all 0.15s ease;
+            border-bottom: 0.5px solid rgba(150,150,150,0.1);
+            cursor: pointer;
+            transition: transform 0.15s ease, opacity 0.15s ease;
         }
         .ios-item:last-child { border-bottom: none; }
-        .ios-item:active {
-            background: var(--item-active);          /* 點擊時背景變淺 */
-            transform: scale(0.98) translateY(1px);  /* 縮小 + 輕微下沉 */
-            opacity: 0.92;                           /* 整體稍淡，加強視覺回饋 */
-        }
         .ios-item span { font-size: 19px; font-weight: 500; }
+        .back-btn { color: var(--ios-blue); font-size: 17px; margin-bottom: 10px; }
+        .reset-btn { margin-top: 30px; background: var(--text-main); color: var(--bg-color); padding: 16px; border-radius: 15px; text-align: center; font-weight: 600; }
+
         .res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
         .res-tile { background: rgba(150,150,150,0.1); padding: 15px; border-radius: 15px; }
         .res-val { font-size: 22px; font-weight: 700; color: var(--liquid-purple); }
-        .back-btn { color: var(--ios-blue); font-size: 17px; margin-bottom: 10px; cursor: pointer; }
-        .reset-btn { margin-top: 30px; background: var(--text-main); color: var(--bg-color); padding: 16px; border-radius: 15px; text-align: center; font-weight: 600; }
-       
-        /* 浮水印 CSS */
+
+        .feedback-form {
+            background: var(--glass);
+            backdrop-filter: blur(25px) saturate(180%);
+            border-radius: 20px;
+            border: 1px solid var(--glass-stroke);
+            padding: 24px;
+            margin-top: 16px;
+        }
+        .feedback-form label { display: block; font-size: 17px; font-weight: 600; margin: 20px 0 8px; }
+        .feedback-form input, .feedback-form select, .feedback-form textarea {
+            width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid var(--glass-stroke);
+            background: rgba(255,255,255,0.3); font-size: 17px; color: var(--text-main); font-family: inherit;
+        }
+        [data-theme="dark"] .feedback-form input,
+        [data-theme="dark"] .feedback-form select,
+        [data-theme="dark"] .feedback-form textarea {
+            background: rgba(40,40,40,0.5); border-color: rgba(255,255,255,0.2);
+        }
+        .feedback-form textarea { min-height: 160px; max-height: 45vh; resize: vertical; }
+        .feedback-form button {
+            margin-top: 24px; width: 100%; padding: 16px; background: var(--ios-blue); color: white;
+            border: none; border-radius: 15px; font-size: 18px; font-weight: 600; cursor: pointer;
+        }
+        .feedback-form button:active { background: #0062cc; }
+
         .watermark {
-            position: fixed;
-            right: 8px;
-            bottom: 8px;
-            font-size: 8px;
-            color: rgba(150, 150, 150, 0.5);
-            text-align: right;
-            pointer-events: none;
-            padding: 5px;
-            max-width: 500px;
-            line-height: 1.2;
+            position: fixed; right: 8px; bottom: 8px; font-size: 8px; color: rgba(150,150,150,0.5);
+            text-align: right; pointer-events: none; padding: 5px; max-width: 500px; line-height: 1.2; z-index: 10;
         }
-        [data-theme="dark"] .watermark {
-             color: rgba(255, 255, 255, 0.4);
-        }
+
+/* 其他開關樣式保持原樣 */
+.theme-toggle-container.off {
+    background: #6c757d;
+}
+
+.theme-toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-container.on .theme-toggle-knob {
+    transform: translateX(24px);
+}
+
+/* 深色模式調整 */
+[data-theme="dark"] .theme-toggle-container.off {
+    background: #495057;
+}
+
+[data-theme="dark"] .theme-toggle-container.on {
+    background: #2ecc71;
+}
+
+/* 晃動（可選） */
+.theme-toggle-container:active,
+.theme-toggle-container.shake {
+    animation: shake 0.4s ease-in-out;
+}
+
+/* 深色模式提示泡泡 */
+.theme-hint {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 70px;  /* 位置約在開關下方，可調 60~90px */
+    opacity: 0;
+    transition: opacity 0.8s ease-in-out;
+}
+
+.theme-hint.show {
+    opacity: 1;
+}
+
+.hint-bubble {
+    background: rgba(0, 0, 0, 0.75);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 20px;
+    font-size: 15px;
+    font-weight: 500;
+    max-width: 80%;
+    text-align: center;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+[data-theme="dark"] .hint-bubble {
+    background: rgba(255, 255, 255, 0.9);
+    color: #1c1c1e;
+}
+
+.toast {
+    position: fixed;
+    top: 60%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.85);
+    color: white;
+    padding: 16px 32px;
+    border-radius: 30px;
+    font-size: 16px;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+.toast.show {
+    opacity: 1;
+}
+
+[data-theme="dark"] .toast {
+    background: rgba(255,255,255,0.9);
+    color: #1c1c1e;
+}
+
+/* 深色模式開關 - 綠色滑動式（確保顯示） */
+.theme-toggle-container {
+    position: relative;
+    width: 54px;
+    height: 30px;
+    background: #28a745;                /* 綠色軌道 - 開啟（深色） */
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    flex-shrink: 0;
+    margin-left: 12px;                  /* 與意見回饋隔一點距離 */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15); /* 加陰影，避免看起來像小白圓 */
+}
+
+.theme-toggle-container.off {
+    background: #6c757d;                /* 灰色 - 關閉（淺色） */
+}
+
+.theme-toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.theme-toggle-container.on .theme-toggle-knob {
+    transform: translateX(24px);        /* 滑到右邊 */
+}
+
+/* 深色模式調整 */
+[data-theme="dark"] .theme-toggle-container.off {
+    background: #495057;
+}
+
+[data-theme="dark"] .theme-toggle-container.on {
+    background: #2ecc71;                /* 亮綠 */
+}
+
+/* 點擊晃動（如果有） */
+.theme-toggle-container:active,
+.theme-toggle-container.shake {
+    animation: shake 0.4s ease-in-out;
+}
+
+/* === 最終修復深色開關：強制顯示 + 定位 === */
+#themeToggle {
+    position: relative !important;
+    width: 54px !important;
+    height: 30px !important;
+    background: #28a745 !important;  /* 綠色軌道 - 開啟（深色） */
+    border-radius: 999px !important;
+    cursor: pointer !important;
+    transition: background 0.3s ease !important;
+    flex-shrink: 0 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+    margin-left: 12px !important;   /* 與意見回饋的距離 */
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#themeToggle.off {
+    background: #6c757d !important;  /* 灰色 - 淺色 */
+}
+
+#themeToggle .theme-toggle-knob {
+    position: absolute !important;
+    top: 3px !important;
+    left: 3px !important;
+    width: 24px !important;
+    height: 24px !important;
+    background: white !important;
+    border-radius: 50% !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25) !important;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+#themeToggle.on .theme-toggle-knob {
+    transform: translateX(24px) !important;
+}
+
+/* 深色模式調整 */
+[data-theme="dark"] #themeToggle.off {
+    background: #495057 !important;
+}
+
+[data-theme="dark"] #themeToggle.on {
+    background: #2ecc71 !important;
+}
+
+/* 點擊晃動 */
+#themeToggle:active,
+#themeToggle.shake {
+    animation: shake 0.4s ease-in-out !important;
+}
+
     </style>
 </head>
 <body data-theme="light">
 <div class="liquid-bg"></div>
-<!-- 已添加提示文字 title 屬性 -->
-<div class="theme-toggle" onclick="toggleTheme()" id="themeBtn" title="切換深色模式">🌙</div>
+<div class="theme-hint" id="themeHint">
+    <div class="hint-bubble">
+        點擊右上角開關可以切換深色模式喔～
+    </div>
+</div>
+
+<div class="tab-bar">
+    <!-- 可滑動的 tab 區域 -->
+    <div class="tab-list">
+        <div class="tab-item active" data-tab="shoe" onclick="clickFeedback(this, () => switchTab('shoe'))">鞋碼轉換</div>
+        <div class="tab-item" data-tab="clothing" onclick="clickFeedback(this, () => switchTab('clothing'))">服飾尺碼轉換</div>
+        <div class="tab-item" data-tab="product" onclick="clickFeedback(this, () => switchTab('product'))">產品知識查詢</div>
+        <div class="tab-item" data-tab="todo" onclick="clickFeedback(this, () => switchTab('todo'))">待開發</div>
+        <!-- 未來新增 tab 都加在這裡，就會跟著滑動 -->
+    </div>
+
+    <!-- 固定在右邊的部分（意見回饋 + 開關） -->
+    <div class="fixed-right">
+    <div class="tab-item fixed feedback-icon" data-tab="feedback" onclick="clickFeedback(this, () => switchTab('feedback'))">💬</div>
+    <div class="theme-toggle-container" id="themeToggle" onclick="toggleTheme()">
+        <div class="theme-toggle-knob"></div>
+    </div>
+</div>
+</div>
+</div>
+
 <div id="nav-container">
     <header>
         <h1 id="title-text">陽春自製轉換器By,Lai</h1>
         <p id="sub-text">客人提供的鞋款類型</p>
     </header>
     <div class="view-stack">
-        <!-- Step 1 -->
+        <!-- 鞋碼轉換頁面 -->
         <div id="view1" class="step-view active">
             <div class="glass-card">
-                <div class="ios-item" onclick="selectType('男款')"><span>男款</span></div>
-                <div class="ios-item" onclick="selectType('女款')"><span>女款</span></div>
-                <div class="ios-item" onclick="selectType('兒童款')"><span>兒童款</span></div>
+                <div class="ios-item" onclick="clickFeedback(this, () => selectType('男款'))"><span>男款</span></div>
+                <div class="ios-item" onclick="clickFeedback(this, () => selectType('女款'))"><span>女款</span></div>
+                <div class="ios-item" onclick="clickFeedback(this, () => selectType('兒童款'))"><span>兒童款</span></div>
             </div>
         </div>
-        <!-- Step 2 -->
         <div id="view2" class="step-view">
             <div class="back-btn" onclick="goBack(1)"> 想回到過去~(其實就是上一頁)</div>
             <div class="glass-card" id="unit-list"></div>
         </div>
-        <!-- Step 3 -->
         <div id="view3" class="step-view">
             <div class="back-btn" onclick="goBack(2)"> 想回到過去~(其實就是上一頁)</div>
             <div class="glass-card" id="value-list"></div>
         </div>
-        <!-- Step 4 -->
         <div id="view4" class="step-view">
             <div class="glass-card" style="padding:25px; text-align:center;">
                 <div id="result-content"></div>
                 <div class="reset-btn" onclick="goBack(1)">你還可以再來一次</div>
             </div>
         </div>
+
+        <!-- 意見回饋頁面 -->
+        <div id="view5" class="step-view">
+            <div class="feedback-form">
+                <h2 style="margin-top:0; color:var(--liquid-purple)">意見回饋</h2>
+                
+                <label for="empId">員編 (例: AB1234)</label>
+                <input type="text" id="empId" maxlength="6" placeholder="請輸入 2 英文字母 + 4 數字" autocomplete="off">
+
+                <label for="feedbackType">意見項目</label>
+                <select id="feedbackType">
+                    <option value="">請選擇</option>
+                    <option value="添加功能">添加功能</option>
+                    <option value="添加尺寸/款式/單位">添加尺寸\款式\單位</option>
+                    <option value="使用時發生錯誤回報">使用時發生錯誤回報</option>
+                    <option value="其他">其他</option>
+                </select>
+
+                <label for="feedbackContent">意見回報輸入</label>
+                <textarea id="feedbackContent" placeholder="請先選擇意見項目"></textarea>
+
+                <button onclick="submitFeedback()">送出回饋</button>
+            </div>
+        </div>
     </div>
 </div>
-<!-- 浮水印 HTML -->
+
 <div class="watermark">
-    Nike 尺寸轉換工具.Made by Lai_0827.(NiXkMoXXXtum_XN2):D<br>
-    我是靠 AI 寫的我沒有這麼厲害我是表藝系的不是資工系<br>
-    需添加功能 \ 尺寸 \ 單位 \ 類型可找小賴 但有任何責任請找劉漢頓
+    Nike 尺寸轉換工具.Made by Lai_0827.(NiXkMoXXXtum_XN2)<br>
+    小賴只是個表藝系學生沒有學過程式語言<br>
+    該網站所有代碼皆為AI生成後校正<br>
+    需添加功能或添加功能內選項請點選目錄頁意見回饋<br>
+    如有責任問題或法律責任 請找劉漢頓 他是我的直屬上司
 </div>
 
+
+
+
 <script>
-// --- 核心資料 ---
 const sizeData = {
     "男款": [{US:4, UK:3.5, EUR:36, CM:23}, {US:4.5, UK:4, EUR:36.5, CM:23.5}, {US:5, UK:4.5, EUR:37.5, CM:23.5}, {US:5.5, UK:5, EUR:38, CM:24}, {US:6, UK:5, EUR:38.5, CM:24}, {US:6.5, UK:5.5, EUR:39, CM:24.5}, {US:7, UK:6, EUR:40, CM:25}, {US:7.5, UK:6.5, EUR:40.5, CM:25.5}, {US:8, UK:7, EUR:41, CM:26}, {US:8.5, UK:7.5, EUR:42, CM:26.5}, {US:9, UK:8, EUR:42.5, CM:27}, {US:9.5, UK:8.5, EUR:43, CM:27.5}, {US:10, UK:9, EUR:44, CM:28}, {US:10.5, UK:9.5, EUR:44.5, CM:28.5}, {US:11, UK:10, EUR:45, CM:29}, {US:11.5, UK:10.5, EUR:45.5, CM:29.5}, {US:12, UK:11, EUR:46, CM:30}, {US:12.5, UK:11.5, EUR:47, CM:30.5}],
     "女款": [{US:5, UK:2.5, EUR:35.5, CM:22}, {US:5.5, UK:3, EUR:36, CM:22.5}, {US:6, UK:3.5, EUR:36.5, CM:23}, {US:6.5, UK:4, EUR:37.5, CM:23.5}, {US:7, UK:4.5, EUR:38, CM:24}, {US:7.5, UK:5, EUR:38.5, CM:24.5}, {US:8, UK:5.5, EUR:39, CM:25}, {US:8.5, UK:6, EUR:40, CM:25.5}, {US:9, UK:6.5, EUR:40.5, CM:26}, {US:10, UK:7.5, EUR:42, CM:27}],
     "兒童款": [{US:"1C", EUR:16, CM:7}, {US:"2C", EUR:17, CM:8}, {US:"3C", EUR:18.5, CM:9}, {US:"4C", EUR:19.5, CM:10}, {US:"5C", EUR:21, CM:11}, {US:"6C", EUR:22, CM:12}, {US:"7C", EUR:23.5, CM:13}, {US:"8C", EUR:25, CM:14}, {US:"9C", EUR:26, CM:15}, {US:"10C", EUR:27, CM:16}, {US:"11C", EUR:28, CM:17}, {US:"12C", EUR:29.5, CM:18}, {US:"13C", EUR:31, CM:19}, {US:"1Y", EUR:32, CM:20}, {US:"1.5Y", EUR:33, CM:20.5}, {US:"2Y", EUR:33.5, CM:21}, {US:"2.5Y", EUR:34, CM:21.5}, {US:"3Y", EUR:35, CM:22}, {US:"3.5Y", EUR:35.5, CM:22.5}, {US:"4Y", EUR:36, CM:23}, {US:"4.5Y", EUR:36.5, CM:23.5}, {US:"5Y", EUR:37, CM:23.5}, {US:"5.5Y", EUR:37.5, CM:24}, {US:"6Y", EUR:38.5, CM:24}, {US:"6.5Y", EUR:39, CM:24.5}, {US:"7Y", EUR:40, CM:25}]
 };
-
 let currentSelection = { type: '', unit: '', value: '' };
 
-// --- 主題邏輯 ---
+// 主題
 function initTheme() {
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.body.setAttribute('data-theme', savedTheme);
-    const themeBtn = document.getElementById('themeBtn');
-    themeBtn.innerText = savedTheme === 'dark' ? '☀️' : '🌙';
-    themeBtn.title = savedTheme === 'dark' ? '切換淺色模式' : '切換深色模式';
+    
+    const toggle = document.getElementById('themeToggle');
+    if (toggle) {
+        if (savedTheme === 'dark') {
+            toggle.classList.add('on');
+            toggle.classList.remove('off');
+        } else {
+            toggle.classList.add('off');
+            toggle.classList.remove('on');
+        }
+    }
+    
+    // 移除原本的 emoji 相關代碼
 }
+
+// 載入後顯示提示，第一次點擊螢幕就隱藏
+window.addEventListener('load', () => {
+    const hint = document.getElementById('themeHint');
+    if (!hint) return;
+
+    // 已經有 localStorage 記錄「看過提示」就不要再顯示
+    if (localStorage.getItem('hasSeenThemeHint') === 'true') {
+        hint.style.display = 'none';
+        return;
+    }
+
+    // 顯示提示
+    hint.style.opacity = '1';  // 雖然有 animation，但保險起見
+
+    // 第一次任何點擊就隱藏 + 記錄已看過
+    const hideHint = () => {
+        hint.style.opacity = '0';
+        setTimeout(() => { hint.style.display = 'none'; }, 800);
+        localStorage.setItem('hasSeenThemeHint', 'true');
+        document.removeEventListener('click', hideHint);
+        document.removeEventListener('touchstart', hideHint);
+    };
+
+    document.addEventListener('click', hideHint, { once: true });
+    document.addEventListener('touchstart', hideHint, { once: true });
+});
+
 function toggleTheme() {
     const current = document.body.getAttribute('data-theme');
     const next = current === 'light' ? 'dark' : 'light';
+    
     document.body.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
-    const themeBtn = document.getElementById('themeBtn');
-    themeBtn.innerText = next === 'dark' ? '☀️' : '🌙';
-    themeBtn.title = next === 'dark' ? '切換淺色模式' : '切換深色模式';
+    
+    const toggle = document.getElementById('themeToggle');
+    if (toggle) {
+        if (next === 'dark') {
+            toggle.classList.add('on');
+            toggle.classList.remove('off');
+        } else {
+            toggle.classList.add('off');
+            toggle.classList.remove('on');
+        }
+    }
+    
+    // 如果你有 clickFeedback 的晃動效果，也可以保留
+    // clickFeedback(toggle);
 }
 
-// --- 觸覺回饋 ---
-function hapticFeedback() {
-    if (navigator.vibrate) {
-        navigator.vibrate(50);  // 短震 50ms，Android 有效，iOS 無效但不 error
+// 觸覺 & 點擊反饋
+function hapticFeedback() { if (navigator.vibrate) navigator.vibrate(50); }
+// 改成晃動 + 延遲執行 callback
+function clickFeedback(el, callback) {
+    if (!el) {
+        if (callback) callback();
+        return;
+    }
+
+    const tab = el.getAttribute('data-tab');
+
+    // 鞋碼轉換與意見回饋：只縮放，不震動
+    if (tab === 'shoe' || tab === 'feedback') {
+        el.classList.add('clicked');  // 觸發縮放 class
+        setTimeout(() => {
+            el.classList.remove('clicked');
+            if (callback) callback();
+        }, 200);  // 縮放動畫時間 0.2s
+    } 
+    // 開發中 tab：只震動，不縮放
+    else {
+        el.classList.add('shake');
+        setTimeout(() => {
+            el.classList.remove('shake');
+            if (callback) callback();
+        }, 400);
     }
 }
 
-// --- 導航邏輯 ---
+// 鞋碼邏輯
 function selectType(type) {
     hapticFeedback();
     currentSelection.type = type;
-    const units = type === "兒童款" ? ["US", "沒人會用UK吧…", "EUR", "CM"] : ["US", "UK", "EUR", "CM"];
+    const units = type === "兒童款" ? ["US", "EUR", "CM"] : ["US", "UK", "EUR", "CM"];
     document.getElementById('unit-list').innerHTML = units.map(u => `<div class="ios-item" onclick="selectUnit('${u}')"><span>${u}</span></div>`).join('');
     navigateTo(2, "那客人是用甚麼單位呢", "下面選一個好嗎~");
 }
 function selectUnit(unit) {
     hapticFeedback();
-    if (unit.includes("沒人會用")) return alert("😱 沃草！真的有人用UK？");
     currentSelection.unit = unit;
     const values = [...new Set(sizeData[currentSelection.type].map(item => item[unit]))];
     document.getElementById('value-list').innerHTML = values.map(v => `<div class="ios-item" onclick="selectValue('${v}')"><span>${v}</span></div>`).join('');
@@ -249,10 +687,8 @@ function selectValue(val) {
     }
 }
 function navigateTo(step, title, sub) {
-    const currentView = document.querySelector('.step-view.active');
-    if (currentView) currentView.classList.replace('active', 'exit');
+    document.querySelectorAll('.step-view').forEach(v => { v.classList.remove('active'); v.classList.remove('exit'); });
     setTimeout(() => {
-        document.querySelectorAll('.step-view').forEach(v => v.classList.remove('active', 'exit'));
         document.getElementById('view' + step).classList.add('active');
         document.getElementById('title-text').innerText = title;
         document.getElementById('sub-text').innerText = sub;
@@ -263,42 +699,137 @@ function goBack(step) {
     navigateTo(step, titles[step], "那你再選一次");
 }
 
-// 初始化
-initTheme();
+// tab 切換
+function switchTab(tab) {
+    hapticFeedback();
 
-// 離線存取 - 單檔 service worker（整個程式碼的最後）
-if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        const swCode = `
-            const CACHE_NAME = 'shoe-transform-v1';
-            const urlsToCache = [
-                './',
-                './index.html'  // 如果你的檔案不是 index.html，請改成正確檔名
-            ];
+    // 只對「鞋碼轉換」和「意見回饋」做頁面切換
+    if (tab === 'shoe') {
+        currentSelection = { type: '', unit: '', value: '' };
+        navigateTo(1, "陽春自製轉換器By,Lai", "客人提供的鞋款類型");
+        
+        // 更新高亮
+        document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
+        document.querySelector('.tab-item[data-tab="shoe"]').classList.add('active');
+    } else if (tab === 'feedback') {
+        document.querySelectorAll('.step-view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view5').classList.add('active');
+        document.getElementById('title-text').innerText = "意見回饋";
+        document.getElementById('sub-text').innerText = "告訴我們你的想法吧~";
+        
+        // 更新高亮
+        document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
+        document.querySelector('.tab-item[data-tab="feedback"]').classList.add('active');
+    }
+    // 開發中的 tab（clothing, product, todo）什麼都不做，只靠 onclick 的 clickFeedback 抖動
+}
 
-            self.addEventListener('install', event => {
-                event.waitUntil(
-                    caches.open(CACHE_NAME)
-                        .then(cache => cache.addAll(urlsToCache))
-                );
-            });
 
-            self.addEventListener('fetch', event => {
-                event.respondWith(
-                    caches.match(event.request)
-                        .then(response => response || fetch(event.request))
-                );
-            });
-        `;
 
-        const blob = new Blob([swCode], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(blob);
+// 意見回饋邏輯
+document.getElementById('empId')?.addEventListener('input', e => {
+    let v = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (v.length > 6) v = v.slice(0,6);
+    e.target.value = v;
+});
 
-        navigator.serviceWorker.register(swUrl, { scope: './' })
-            .then(() => console.log('離線 OK'))
-            .catch(err => console.log('SW 錯誤', err));
+document.getElementById('feedbackType')?.addEventListener('change', function() {
+    const t = this.value;
+    const ta = document.getElementById('feedbackContent');
+    const ph = {
+        "添加功能": "添加功能, 請輸入功能建議",
+        "添加尺寸/款式/單位": "添加尺寸\\款式\\單位, 請輸入尺寸\\款式\\單位建議",
+        "使用時發生錯誤回報": "使用時發生錯誤回報, 請輸入你使用時遇到的問題",
+        "其他": "其他, 請輸入你想回饋的內容"
+    };
+    ta.placeholder = ph[t] || "請先選擇意見項目";
+});
+
+function submitFeedback() {
+    const id = document.getElementById('empId').value.trim();
+    const type = document.getElementById('feedbackType').value;
+    const content = document.getElementById('feedbackContent').value.trim();
+
+    if (!id || id.length !== 6 || !/^[A-Z]{2}\d{4}$/.test(id)) {
+        alert("員編格式錯誤！請輸入 2 個大寫英文字母 + 4 位數字，例如 AB1234");
+        return;
+    }
+    if (!type) { alert("請選擇意見項目！"); return; }
+    if (!content) { alert("請輸入回饋內容！"); return; }
+
+    // Google Forms 的 action URL（替換成你自己的）
+    const formAction = "https://docs.google.com/forms/d/e/1FAIpQLSdfSjVGxBCS0x2v8f3FzGXKiJTMygDpKhV2ZqAu1wXYYSjvvw/viewform?usp=publish-editor";
+
+    // 欄位對應（在 Google Forms 檢查原始碼找 name="entry.XXXXX"）
+    const formData = new FormData();
+    formData.append("entry.1234567890", id);          // 員編的 entry ID
+    formData.append("entry.0987654321", type);        // 意見項目的 entry ID
+    formData.append("entry.1122334455", content);     // 內容的 entry ID
+
+    fetch(formAction, {
+        method: "POST",
+        mode: "no-cors",  // Google Forms 需要 no-cors
+        body: formData
+    }).then(() => {
+        alert("感謝你的回饋！已送出～\n（小賴會看到的喔）");
+        // 清空表單
+        document.getElementById('empId').value = '';
+        document.getElementById('feedbackType').value = '';
+        document.getElementById('feedbackContent').value = '';
+        document.getElementById('feedbackContent').placeholder = "請先選擇意見項目";
+    }).catch(err => {
+        alert("送出失敗，請再試一次～");
+        console.error(err);
     });
 }
+
+// 初始化
+initTheme();
+window.addEventListener('load', () => {
+    switchTab('shoe');  // 永遠先開鞋碼轉換
+});
+
+// 頁面載入後顯示提示，完整顯示 3 秒後自動淡出，或點擊螢幕提前消失
+window.addEventListener('load', () => {
+    const hint = document.getElementById('themeHint');
+    if (!hint) return;
+
+    // 如果之前看過，就不顯示
+    if (localStorage.getItem('hasSeenThemeHint') === 'true') {
+        hint.style.display = 'none';
+        return;
+    }
+
+    // 延遲 0.5 秒淡入（避免載入瞬間閃）
+    setTimeout(() => {
+        hint.classList.add('show');
+    }, 500);
+
+    // 3 秒後自動淡出
+    const autoHide = setTimeout(() => {
+        hint.classList.remove('show');
+        setTimeout(() => {
+            hint.style.display = 'none';
+        }, 800);  // 等淡出動畫結束
+        localStorage.setItem('hasSeenThemeHint', 'true');
+    }, 3500);  // 3 秒完整顯示（從淡入開始算）
+
+    // 用戶點擊螢幕就立即淡出
+    const hideOnInteract = () => {
+        clearTimeout(autoHide);
+        hint.classList.remove('show');
+        setTimeout(() => {
+            hint.style.display = 'none';
+        }, 800);
+        localStorage.setItem('hasSeenThemeHint', 'true');
+        document.removeEventListener('click', hideOnInteract);
+        document.removeEventListener('touchstart', hideOnInteract);
+    };
+
+    document.addEventListener('click', hideOnInteract, { once: true });
+    document.addEventListener('touchstart', hideOnInteract, { once: true });
+});
+
 </script>
 </body>
 </html>
