@@ -750,36 +750,43 @@ function submitFeedback() {
     const type = document.getElementById('feedbackType').value;
     const content = document.getElementById('feedbackContent').value.trim();
 
+    // 驗證（保持原樣）
     if (!id || id.length !== 6 || !/^[A-Z]{2}\d{4}$/.test(id)) {
         alert("員編格式錯誤！請輸入 2 個大寫英文字母 + 4 位數字，例如 AB1234");
         return;
     }
-    if (!type) { alert("請選擇意見項目！"); return; }
-    if (!content) { alert("請輸入回饋內容！"); return; }
+    if (!type) {
+        alert("請選擇意見項目！");
+        return;
+    }
+    if (!content) {
+        alert("請輸入回饋內容！");
+        return;
+    }
 
-    // Google Forms 的 action URL（替換成你自己的）
-    const formAction = "https://docs.google.com/forms/d/e/1FAIpQLSdfSjVGxBCS0x2v8f3FzGXKiJTMygDpKhV2ZqAu1wXYYSjvvw/viewform?usp=publish-editor";
+    // Google Forms 送出目標
+    const formAction = "https://docs.google.com/forms/d/e/1FAIpQLSdfSjVGxBCS0x2v8f3FzGXKiJTMygDpKhV2ZqAu1wXYYSjvvw/formResponse";
 
-    // 欄位對應（在 Google Forms 檢查原始碼找 name="entry.XXXXX"）
+    // 欄位對應（已確認對應你的表單）
     const formData = new FormData();
-    formData.append("entry.1234567890", id);          // 員編的 entry ID
-    formData.append("entry.0987654321", type);        // 意見項目的 entry ID
-    formData.append("entry.1122334455", content);     // 內容的 entry ID
+    formData.append("entry.535338149", id);          // 員編
+    formData.append("entry.279485988", type);        // 意見項目
+    formData.append("entry.1394457056", content);    // 意見內容
 
     fetch(formAction, {
         method: "POST",
-        mode: "no-cors",  // Google Forms 需要 no-cors
+        mode: "no-cors",  // Google Forms 必須用 no-cors
         body: formData
     }).then(() => {
-        alert("感謝你的回饋！已送出～\n（小賴會看到的喔）");
+        alert("感謝你的回饋！已成功送出～\n小賴會認真看的喔 :D");
         // 清空表單
         document.getElementById('empId').value = '';
         document.getElementById('feedbackType').value = '';
         document.getElementById('feedbackContent').value = '';
         document.getElementById('feedbackContent').placeholder = "請先選擇意見項目";
     }).catch(err => {
-        alert("送出失敗，請再試一次～");
-        console.error(err);
+        alert("送出時出了點問題，請再試一次～");
+        console.error("送出錯誤:", err);
     });
 }
 
@@ -832,4 +839,5 @@ window.addEventListener('load', () => {
 
 </script>
 </body>
+
 </html>
