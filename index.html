@@ -105,7 +105,6 @@
             box-shadow: 0 2px 8px rgba(0,122,255,0.2);
         }
 
-        /* 所有 tab 與選項的縮放反饋 */
         .tab-item:active,
         .tab-item.clicked,
         .ios-item:active,
@@ -118,7 +117,6 @@
             transition: transform 0.2s ease-out;
         }
 
-        /* 意見回饋按鈕 */
         .tab-item.fixed.feedback-icon {
             background: transparent;
             border: none;
@@ -133,7 +131,6 @@
             color: var(--text-main);
         }
 
-        /* 右邊固定區域 */
         .fixed-right {
             display: flex;
             align-items: center;
@@ -142,7 +139,6 @@
             padding-left: 12px;
         }
 
-        /* 晃動動畫（僅開發中 tab 使用） */
         @keyframes shake {
             0% { transform: translateX(0); }
             20% { transform: translateX(-6px); }
@@ -223,7 +219,6 @@
             text-align: right; pointer-events: none; padding: 5px; max-width: 500px; line-height: 1.2; z-index: 10;
         }
 
-        /* 深色模式開關 */
         .theme-toggle-container {
             position: relative;
             width: 54px;
@@ -252,46 +247,38 @@
         [data-theme="dark"] .theme-toggle-container.off { background: #495057; }
         [data-theme="dark"] .theme-toggle-container.on { background: #2ecc71; }
 
-        /* 開發中提示（淡入淡出） */
-.coming-soon {
-    position: fixed;
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 16px 32px;
-    border-radius: 24px;
-    font-size: 17px;
-    font-weight: 500;
-    z-index: 9999;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.6s ease, transform 0.6s ease;
-    max-width: 90%;
-    text-align: center;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-    backdrop-filter: blur(10px);
-}
-
-.coming-soon.show {
-    opacity: 1;
-    transform: translate(-50%, -50%) translateY(-10px);
-}
-
-[data-theme="dark"] .coming-soon {
-    background: rgba(255, 255, 255, 0.9);
-    color: #1c1c1e;
-}
+        .coming-soon {
+            position: fixed;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 16px 32px;
+            border-radius: 24px;
+            font-size: 17px;
+            font-weight: 500;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            max-width: 90%;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+        .coming-soon.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) translateY(-10px);
+        }
+        [data-theme="dark"] .coming-soon {
+            background: rgba(255, 255, 255, 0.9);
+            color: #1c1c1e;
+        }
     </style>
 </head>
 <body data-theme="light">
 <div class="liquid-bg"></div>
-<div class="theme-hint" id="themeHint">
-    <div class="hint-bubble">
-        點擊右上角開關可以切換深色模式喔～
-    </div>
-</div>
 
 <div class="tab-bar">
     <div class="tab-list">
@@ -357,6 +344,39 @@
                 <textarea id="feedbackContent" placeholder="請先選擇意見項目"></textarea>
 
                 <button onclick="submitFeedback()">送出回饋</button>
+            </div>
+        </div>
+
+        <!-- 新增：產品知識查詢頁面 -->
+        <div id="view6" class="step-view">
+            <div class="back-btn" onclick="goBack(1)">← 返回主頁</div>
+            <div class="glass-card" style="padding: 30px; text-align: center;">
+                <h2 style="margin: 0 0 30px; color: var(--liquid-purple);">Nike 產品知識查詢</h2>
+                
+                <form id="nikeSearchForm">
+                    <div style="margin: 25px 0; font-size: 19px; font-weight: 500;">
+                        <label style="margin-right: 40px; cursor: pointer;">
+                            <input type="radio" name="gender" value="男款" checked> 男款
+                        </label>
+                        <label style="cursor: pointer;">
+                            <input type="radio" name="gender" value="女款"> 女款
+                        </label>
+                    </div>
+                    
+                    <input type="text" id="productKeyword" placeholder="輸入產品名稱或關鍵字 (例如：Air Force 1、Dunk Low、Zoom Fly)" required
+                           style="width: 100%; padding: 16px; font-size: 17px; border-radius: 12px; border: 1px solid var(--glass-stroke); background: var(--glass); color: var(--text-main); margin-bottom: 25px;">
+                    
+                    <button type="submit" style="width: 100%; padding: 18px; background: var(--ios-blue); color: white; border: none; border-radius: 15px; font-size: 18px; font-weight: 600; cursor: pointer;">
+                        查詢 Nike 台灣官網
+                    </button>
+                </form>
+                
+                <p style="margin-top: 25px; font-size: 14px; opacity: 0.7;">
+                    將自動在新分頁開啟 Nike 官方搜尋結果<br>（若結果不精準，可試加更多描述詞<br> 
+                    暫時為Nike官網結果<br> 日後將會使用小賴的筆記和整理<br> 
+                    做為產品知識查詢的依據<br> 各位放心<br> 會給專業人士檢查過的
+                
+                </p>
             </div>
         </div>
     </div>
@@ -435,25 +455,25 @@ function clickFeedback(el, callback) {
 
     const tab = el.getAttribute('data-tab');
 
-    // 已寫完的功能（shoe, feedback）→ 只縮放
-    if (tab === 'shoe' || tab === 'feedback') {
+    // 已完成的功能：shoe, feedback, product → 只縮放
+    if (tab === 'shoe' || tab === 'feedback' || tab === 'product') {
         el.classList.add('clicked');
         setTimeout(() => {
             el.classList.remove('clicked');
             if (callback) callback();
-        }, 200);  // 縮放 0.2 秒
+        }, 200);
     } 
-    // 沒寫完的功能（clothing, product, todo）→ 只震動
+    // 開發中：clothing, todo → 震動
     else {
         el.classList.add('shake');
         setTimeout(() => {
             el.classList.remove('shake');
             if (callback) callback();
-        }, 400);  // 震動 0.4 秒
+        }, 400);
     }
 }
 
-// 鞋碼邏輯
+// 鞋碼邏輯（原功能不變）
 function selectType(type) {
     currentSelection.type = type;
     const units = type === "兒童款" ? ["US", "UK", "EUR", "CM"] : ["US", "UK", "EUR", "CM"];
@@ -470,43 +490,39 @@ function selectUnit(unit) {
 
 function selectValue(val) {
     const target = sizeData[currentSelection.type].find(item => String(item[currentSelection.unit]) === String(val));
-    // ... (前面的代碼不變)
+    if (target) {
+        let html = `<h2 style="margin-top:0; color:var(--liquid-purple)">✅ ${currentSelection.type}</h2><div class="res-grid">`;
+        html += `<div class="res-tile"><span style="font-size:12px;opacity:0.6">US</span><br><span class="res-val">${target.US}</span></div>`;
+        html += `<div class="res-tile"><span style="font-size:12px;opacity:0.6">UK</span><br><span class="res-val">${target.UK !== undefined ? target.UK : '-'}</span></div>`;
+        html += `<div class="res-tile"><span style="font-size:12px;opacity:0.6">EUR</span><br><span class="res-val">${target.EUR}</span></div>`;
+        html += `<div class="res-tile"><span style="font-size:12px;opacity:0.6">CM</span><br><span class="res-val">${target.CM}</span></div>`;
+        html += `</div>`;
 
-if (target) {
-    let html = `<h2 style="margin-top:0; color:var(--liquid-purple)">✅ ${currentSelection.type}</h2><div class="res-grid">`;
-    html += `<div class="res-tile"><span style="font-size:12px;opacity:0.6">US</span><br><span class="res-val">${target.US}</span></div>`;
-    html += `<div class="res-tile"><span style="font-size:12px;opacity:0.6">UK</span><br><span class="res-val">${target.UK !== undefined ? target.UK : '-'}</span></div>`;
-    html += `<div class="res-tile"><span style="font-size:12px;opacity:0.6">EUR</span><br><span class="res-val">${target.EUR}</span></div>`;
-    html += `<div class="res-tile"><span style="font-size:12px;opacity:0.6">CM</span><br><span class="res-val">${target.CM}</span></div>`;
-    html += `</div>`;
+        if (currentSelection.type !== "兒童款") {
+            let sockSize = '無法判斷';
+            const cm = parseFloat(target.CM);
+            if (!isNaN(cm)) {
+                if (cm >= 21 && cm <= 23.9) sockSize = 'S';
+                else if (cm >= 24 && cm <= 24.9) sockSize = 'S\\M';
+                else if (cm >= 25 && cm <= 26.9) sockSize = 'M';
+                else if (cm >= 27 && cm <= 27.9) sockSize = 'M\\L';
+                else if (cm >= 28 && cm <= 29.9) sockSize = 'L';
+                else if (cm >= 30 && cm <= 30.9) sockSize = 'L\\XL';
+                else if (cm >= 31 && cm <= 33) sockSize = 'XL';
+                else sockSize = '超出常見範圍';
+            }
 
-    // 只在非兒童款時顯示襪子尺寸
-    if (currentSelection.type !== "兒童款") {
-        let sockSize = '無法判斷';
-        const cm = parseFloat(target.CM);
-        if (!isNaN(cm)) {
-            if (cm >= 21 && cm <= 23.9) sockSize = 'S';
-            else if (cm >= 24 && cm <= 24.9) sockSize = 'S\\M';
-            else if (cm >= 25 && cm <= 26.9) sockSize = 'M';
-            else if (cm >= 27 && cm <= 27.9) sockSize = 'M\\L';
-            else if (cm >= 28 && cm <= 29.9) sockSize = 'L';
-            else if (cm >= 30 && cm <= 30.9) sockSize = 'L\\XL';
-            else if (cm >= 31 && cm <= 33) sockSize = 'XL';
-            else sockSize = '超出常見範圍';
+            html += `
+                <div style="margin-top: 20px; padding: 16px; background: rgba(150,150,150,0.1); border-radius: 12px; text-align: center;">
+                    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">適合襪子尺寸</div>
+                    <div style="font-size: 32px; font-weight: 700; color: var(--liquid-purple);">${sockSize}</div>
+                    <div style="font-size: 14px; opacity: 0.7; margin-top: 4px;">(男女通用)</div>
+                </div>
+            `;
         }
 
-        html += `
-            <div style="margin-top: 20px; padding: 16px; background: rgba(150,150,150,0.1); border-radius: 12px; text-align: center;">
-                <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">適合襪子尺寸</div>
-                <div style="font-size: 32px; font-weight: 700; color: var(--liquid-purple);">${sockSize}</div>
-                <div style="font-size: 14px; opacity: 0.7; margin-top: 4px;">(男女通用)</div>
-            </div>
-        `;
-    }
-
-    document.getElementById('result-content').innerHTML = html;
-    navigateTo(4, "水喔!一次過 轉成功了", "所以答案就是");
-
+        document.getElementById('result-content').innerHTML = html;
+        navigateTo(4, "水喔!一次過 轉成功了", "所以答案就是");
     }
 }
 
@@ -526,31 +542,53 @@ function goBack(step) {
 
 // tab 切換
 function switchTab(tab) {
-    // 所有 tab 都先執行縮放（由 clickFeedback 處理）
+    document.querySelectorAll('.step-view').forEach(v => {
+        v.classList.remove('active');
+    });
 
-    // 只處理鞋碼轉換與意見回饋
+    document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
+
     if (tab === 'shoe') {
         currentSelection = { type: '', unit: '', value: '' };
         navigateTo(1, "西寧二小工具", "客人提供的鞋款類型");
-
-        // 更新高亮
-        document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
         document.querySelector('.tab-item[data-tab="shoe"]').classList.add('active');
     } 
     else if (tab === 'feedback') {
-        document.querySelectorAll('.step-view').forEach(v => v.classList.remove('active'));
         document.getElementById('view5').classList.add('active');
         document.getElementById('title-text').innerText = "意見回饋";
         document.getElementById('sub-text').innerText = "告訴我們你的想法吧~";
-
-        // 更新高亮
-        document.querySelectorAll('.tab-item').forEach(item => item.classList.remove('active'));
         document.querySelector('.tab-item[data-tab="feedback"]').classList.add('active');
     } 
+    else if (tab === 'product') {
+        document.getElementById('view6').classList.add('active');
+        document.getElementById('title-text').innerText = "產品知識查詢";
+        document.getElementById('sub-text').innerText = "輸入想查的 Nike 產品吧～";
+        document.querySelector('.tab-item[data-tab="product"]').classList.add('active');
+
+        const nikeForm = document.getElementById('nikeSearchForm');
+        if (nikeForm && !nikeForm.dataset.bound) {
+            nikeForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const gender = document.querySelector('input[name="gender"]:checked')?.value || '男款';
+                let keyword = document.getElementById('productKeyword')?.value.trim();
+                
+                if (!keyword) {
+                    alert('請輸入產品名稱或關鍵字！');
+                    return;
+                }
+                
+                const searchQuery = `${gender} ${keyword}`;
+                const nikeUrl = `https://www.nike.com/tw/w?q=${encodeURIComponent(searchQuery)}&vst=${encodeURIComponent(searchQuery)}`;
+                
+                window.open(nikeUrl, '_blank');
+            });
+            nikeForm.dataset.bound = 'true';
+        }
+    } 
     else {
-        // 開發中的三個 tab（clothing, product, todo）
-        // 什麼都不做，只顯示淡入淡出提示
         showComingSoon(tab);
+        // 可選：保持 shoe tab active
+        document.querySelector('.tab-item[data-tab="shoe"]').classList.add('active');
     }
 }
 
@@ -562,30 +600,15 @@ function showComingSoon(tab) {
     div.className = 'coming-soon';
 
     let message = '';
-    if (tab === 'product' || tab === 'clothing') {
-        message = '因開發未完善故暫不公開';  // 或 'X<br>第二行說明'
+    if (tab === 'clothing') {
+        message = '因開發未完善故暫不公開';
     } else if (tab === 'todo') {
-        // 正確用 innerHTML 才能換行
-        div.innerHTML = `
-            我就說待開發<br>
-            你手賤是不是?
-        `;
-        document.body.appendChild(div);
-
-        div.offsetHeight;
-        div.classList.add('show');
-
-        setTimeout(() => {
-            div.classList.remove('show');
-            setTimeout(() => div.remove(), 600);
-        }, 1500);
-        return;  // 提早結束，避免重複 append
+        div.innerHTML = `我就說待開發<br>你手賤是不是?`;
     } else {
         message = '功能開發中';
     }
 
-    // 其他情況用 textContent（單行文字）
-    div.textContent = message;
+    if (message) div.textContent = message;
 
     document.body.appendChild(div);
     div.offsetHeight;
@@ -628,7 +651,6 @@ function submitFeedback() {
     if (!type) { alert("請選擇意見項目！"); return; }
     if (!content) { alert("請輸入回饋內容！"); return; }
 
-    // 建立隱藏 iframe（手機最穩定的送法）
     const iframe = document.createElement('iframe');
     iframe.name = 'hiddenIframe';
     iframe.style.display = 'none';
@@ -670,37 +692,6 @@ function submitFeedback() {
 initTheme();
 window.addEventListener('load', () => {
     switchTab('shoe');
-});
-
-// 深色模式提示
-window.addEventListener('load', () => {
-    const hint = document.getElementById('themeHint');
-    if (!hint) return;
-
-    if (localStorage.getItem('hasSeenThemeHint') === 'true') {
-        hint.style.display = 'none';
-        return;
-    }
-
-    setTimeout(() => hint.classList.add('show'), 500);
-
-    const autoHide = setTimeout(() => {
-        hint.classList.remove('show');
-        setTimeout(() => hint.style.display = 'none', 800);
-        localStorage.setItem('hasSeenThemeHint', 'true');
-    }, 3500);
-
-    const hideOnInteract = () => {
-        clearTimeout(autoHide);
-        hint.classList.remove('show');
-        setTimeout(() => hint.style.display = 'none', 800);
-        localStorage.setItem('hasSeenThemeHint', 'true');
-        document.removeEventListener('click', hideOnInteract);
-        document.removeEventListener('touchstart', hideOnInteract);
-    };
-
-    document.addEventListener('click', hideOnInteract, { once: true });
-    document.addEventListener('touchstart', hideOnInteract, { once: true });
 });
 </script>
 </body>
